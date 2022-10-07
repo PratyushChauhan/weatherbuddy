@@ -7,31 +7,27 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  void getLocation() async {
+    try {
+      LocationPermission locationPermission =
+          await Geolocator.requestPermission();
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.low);
+      print(position);
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getLocation();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            getLocation();
-            //Get the current location
-          },
-          child: Text('Get Location'),
-        ),
-      ),
-    );
-  }
-}
-
-Future<void> getLocation() async {
-  LocationPermission locationPermission = await Geolocator.requestPermission();
-  if (locationPermission == LocationPermission.denied) {
-    print('Location permission not granted by user.');
-  } else if (locationPermission == LocationPermission.deniedForever) {
-    print('Permission denied forever. Change from settings.');
-  } else {
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.low);
-    print(position);
+    return Scaffold();
   }
 }
