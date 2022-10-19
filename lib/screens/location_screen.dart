@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:weatherbuddy/utilities/constants.dart';
 import 'package:weatherbuddy/services/weather.dart' as weather;
 
+weather.WeatherModel weatherModel = weather.WeatherModel();
+
 class LocationScreen extends StatefulWidget {
   LocationScreen({this.locationWeatherData});
   final locationWeatherData;
@@ -11,20 +13,26 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
-  weather.WeatherModel weatherModel = weather.WeatherModel();
-
-  late String message;
-  late String weatherIcon;
-  var cityName;
-  late int temperature;
+  String message = 'Error';
+  String weatherIcon = '';
+  var cityName = '';
+  int temperature = 0;
 
   void updateUI(dynamic weatherData) {
     setState(() {
+      if (weatherData == null) {
+        temperature = 0;
+        message = 'ERROR';
+        cityName = '';
+        weatherIcon = '';
+        return;
+      }
+
       double temp = weatherData['main']['temp'];
       temperature = temp.toInt();
       message = weatherModel.getMessage(temperature);
 
-      cityName = weatherData['name'];
+      cityName = 'in ' + weatherData['name'];
 
       var condition = weatherData['weather'][0]['id'];
       weatherIcon = weatherModel.getWeatherIcon(condition);
@@ -60,10 +68,31 @@ class _LocationScreenState extends State<LocationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      try {
+                        dynamic weatherData =
+                            await weatherModel.getWeatherData();
+                        updateUI(weatherData);
+                      } catch (e) {
+                        showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            title: const Text('Error'),
+                            content: Text('$e'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, 'OK'),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    },
                     child: Icon(
                       Icons.near_me,
                       size: 50.0,
+                      color: Colors.white,
                     ),
                   ),
                   TextButton(
@@ -71,6 +100,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     child: Icon(
                       Icons.location_city,
                       size: 50.0,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -93,7 +123,7 @@ class _LocationScreenState extends State<LocationScreen> {
               Padding(
                 padding: EdgeInsets.only(right: 15.0),
                 child: Text(
-                  message + ' in $cityName!',
+                  message + ' $cityName!',
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),
