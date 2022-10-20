@@ -1,6 +1,8 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:weatherbuddy/services/weather.dart';
 import 'package:flutter/material.dart';
+import 'package:weatherbuddy/utilities/alerts.dart' as alerts;
 
 import 'location_screen.dart';
 
@@ -28,13 +30,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
         );
       }));
     } catch (e) {
-      showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text(e.toString()),
-        ),
-      );
+      alerts.popupError(context, e.toString(), SystemNavigator.pop, null);
     }
   }
 

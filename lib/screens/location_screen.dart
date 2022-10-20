@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:weatherbuddy/screens/city_screen.dart';
 import 'package:weatherbuddy/utilities/constants.dart';
 import 'package:weatherbuddy/services/weather.dart' as weather;
+import 'package:weatherbuddy/utilities/alerts.dart' as alerts;
 
 weather.WeatherModel weatherModel = weather.WeatherModel();
 
@@ -15,9 +17,9 @@ class LocationScreen extends StatefulWidget {
 class _LocationScreenState extends State<LocationScreen> {
   String message = 'Error';
   String weatherIcon = '';
-  var cityName = '';
-  int temperature = 0;
-
+  String cityName = '';
+  var temperature = 0;
+  String? typedName;
   void updateUI(dynamic weatherData) {
     setState(() {
       if (weatherData == null) {
@@ -27,13 +29,10 @@ class _LocationScreenState extends State<LocationScreen> {
         weatherIcon = '';
         return;
       }
-
-      double temp = weatherData['main']['temp'];
+      var temp = weatherData['main']['temp'];
       temperature = temp.toInt();
       message = weatherModel.getMessage(temperature);
-
       cityName = 'in ' + weatherData['name'];
-
       var condition = weatherData['weather'][0]['id'];
       weatherIcon = weatherModel.getWeatherIcon(condition);
     });
@@ -74,19 +73,8 @@ class _LocationScreenState extends State<LocationScreen> {
                             await weatherModel.getWeatherData();
                         updateUI(weatherData);
                       } catch (e) {
-                        showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                            title: const Text('Error'),
-                            content: Text('$e'),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, 'OK'),
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
-                        );
+                        alerts.popupError(
+                            context, e.toString(), Navigator.pop, context);
                       }
                     },
                     child: Icon(
@@ -96,7 +84,17 @@ class _LocationScreenState extends State<LocationScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      typedName = await Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return CityScreen();
+                      }));
+                      if (typedName != null) {
+                        dynamic weatherData = await weather.WeatherModel()
+                            .getCityWeatherData(typedName);
+                        updateUI(weatherData);
+                      }
+                    },
                     child: Icon(
                       Icons.location_city,
                       size: 50.0,
