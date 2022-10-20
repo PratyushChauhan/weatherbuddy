@@ -73,6 +73,7 @@ class _LocationScreenState extends State<LocationScreen> {
                             await weatherModel.getWeatherData();
                         updateUI(weatherData);
                       } catch (e) {
+                        print('Error in reloding');
                         alerts.popupError(
                             context, e.toString(), Navigator.pop, context);
                       }
@@ -89,10 +90,15 @@ class _LocationScreenState extends State<LocationScreen> {
                           MaterialPageRoute(builder: (context) {
                         return CityScreen();
                       }));
-                      if (typedName != null) {
-                        dynamic weatherData = await weather.WeatherModel()
-                            .getCityWeatherData(typedName);
-                        updateUI(weatherData);
+                      try {
+                        if (typedName != null) {
+                          dynamic weatherData = await weather.WeatherModel()
+                              .getCityWeatherData(typedName);
+                          updateUI(weatherData);
+                        }
+                      } catch (e) {
+                        alerts.popupError(
+                            context, e.toString(), Navigator.pop, context);
                       }
                     },
                     child: Icon(
